@@ -22,7 +22,7 @@ const seedUsers = [
   { id: 'agent-riley', name: 'Riley Morgan', email: 'riley.morgan@example.test', role: 'agent', maxCapacity: 15, skillIds: ['skill-refund', 'skill-assistance', 'skill-flight-booking'] },
   { id: 'agent-casey', name: 'Casey Patel', email: 'casey.patel@example.test', role: 'agent', maxCapacity: 15, skillIds: ['skill-technical', 'skill-spanish', 'skill-baggage'] },
   { id: 'agent-avery', name: 'Avery Chen', email: 'avery.chen@example.test', role: 'agent', maxCapacity: 15, skillIds: ['skill-flight-booking', 'skill-refund', 'skill-technical', 'skill-assistance'] },
-  { id: 'user-supervisor', name: 'Morgan Lee', email: 'morgan.lee@example.test', role: 'supervisor', maxCapacity: 20, skillIds: [] },
+  { id: 'user-supervisor', name: 'Nilesh Tambe', email: 'nilesh.tambe@example.test', role: 'supervisor', maxCapacity: 20, skillIds: [] },
 ]
 
 const reasonContent = {

@@ -6,14 +6,24 @@ const assignmentTransitions = {
   accept: ['assigned', 'accepted'],
   decline: ['assigned', 'declined'],
   start: ['accepted', 'inProgress'],
-  resolve: ['inProgress', 'completed'],
+  resolve: ['inProgress', 'completed']
 }
 const slaMinutes = {
   low: { web: 240, phone: 60, email: 480, social: 120 },
   medium: { web: 120, phone: 30, email: 240, social: 60 },
   high: { web: 60, phone: 15, email: 120, social: 30 },
-  urgent: { web: 30, phone: 5, email: 60, social: 15 },
+  urgent: { web: 30, phone: 5, email: 60, social: 15 }
 }
+
+// Mapping from skill IDs to case reasons (inverse of reasonSkill in seedData.js)
+const skillToReason = {
+  'skill-flight-booking': 'flightChange',
+  'skill-baggage': 'baggage',
+  'skill-refund': 'refund',
+  'skill-assistance': 'specialAssistance'
+}
+
+import { matchRequiredSkills } from './utils/skillMatcher.js';
 
 function hasLocalDataShape(value) {
   return value && ['cases', 'agents', 'users', 'skills', 'assignments'].every(key => Array.isArray(value[key]))
@@ -107,30 +117,26 @@ function getEligibleAgent(data, item, excludedIds = []) {
   const requiredSkills = item.requiredSkills || []
   const eligible = data.agents.filter(agent => agent.availabilityStatus === 'available' && agent.currentWorkload < agent.maxCapacity && !excluded.has(agent.id) && requiredSkills.every(skillId => agent.skills.some(skill => skill.skillId === skillId && skill.proficiency > 0)))
   const channelScore = agent => (Number(agent.channelProficiency?.[item.caseOrigin]) || 0) * 20
-  const skillScore = agent => requiredSkills.length ? requiredSkills.reduce((sum, skillId) => sum + (Number(agent.skills.find(skill => skill.skillId === skillId)?.proficiency) || 0) * 20, 0) / requiredSkills.length : 100
+  const skillScore = agent => requiredSkills.length ? requiredSkills.reduce((sum, skillId) => sum + (Number(agent.skills.find(skill => skill.skillId === skillId)?.proficiency) || 0) * 20, 0) / requiredSkills.length : 0
   const workloadScore = agent => agent.maxCapacity > 0 ? (1 - agent.currentWorkload / agent.maxCapacity) * 100 : 0
   eligible.sort((a, b) => a.currentWorkload - b.currentWorkload || (skillScore(b) * .55 + channelScore(b) * .3 + workloadScore(b) * .15) - (skillScore(a) * .55 + channelScore(a) * .3 + workloadScore(a) * .15))
   return eligible[0] || null
 }
 
-function matchRequiredSkills(description, skills) {
-  const text = description.toLocaleLowerCase()
-  return skills.filter(skill => skill.keywords.filter(keyword => {
-    const escaped = keyword.toLocaleLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    return new RegExp(`(?:^|[^\\p{L}\\p{N}])${escaped}(?:$|[^\\p{L}\\p{N}])`, 'u').test(text)
-  }).length).map(skill => skill.id)
-}
+function inferCaseReason(description, skills) {
+  // Use our enhanced skill matcher to find relevant skills
+  const matchedSkills = matchRequiredSkills(description, skills)
 
-function inferCaseReason(description) {
-  const text = description.toLocaleLowerCase()
-  const candidates = [
-    ['flightChange', /flight|booking|reservation|ticket/g],
-    ['baggage', /baggage|luggage|\bbag\b/g],
-    ['refund', /refund|reimbursement|money back/g],
-    ['specialAssistance', /wheelchair|medical|accessibility|special assistance/g],
-  ]
-  const ranked = candidates.map(([reason, pattern]) => [reason, [...text.matchAll(pattern)].length]).sort((a, b) => b[1] - a[1])
-  return ranked[0][1] ? ranked[0][0] : 'generalInquiry'
+  // If we found matching skills, map the first one to a reason
+  if (matchedSkills.length > 0) {
+    const reason = skillToReason[matchedSkills[0]]
+    if (reason) {
+      return reason
+    }
+  }
+
+  // Fallback to general inquiry if no skills match or no reason mapping found
+  return 'generalInquiry'
 }
 
 function calculateSkillMatch(item, agent) {
@@ -167,8 +173,8 @@ export function createCase(data, values, now = Date.now()) {
   const requiredSkills = matchRequiredSkills(values.description, next.skills)
   const item = {
     id: id('case'), title: values.title.trim(), description: values.description.trim(), priority: values.priority || 'medium',
-    caseOrigin: values.caseOrigin || 'web', caseReason: inferCaseReason(values.description), status: 'new',
-    requiredSkills, assignedAgentId: null, assignedAgent: null,
+    caseOrigin: values.caseOrigin || 'web', caseReason: inferCaseReason(values.description, next.skills),
+    status: 'new', requiredSkills, assignedAgentId: null, assignedAgent: null,
     slaExpiration: new Date(now + (slaMinutes[values.priority || 'medium']?.[values.caseOrigin || 'web'] || 60) * 60000).toISOString(),
     createdAt, updatedAt: createdAt,
   }
@@ -195,7 +201,7 @@ export function editCase(data, caseId, values, now = Date.now()) {
   const requiredSkills = matchRequiredSkills(values.description, next.skills)
   const updated = {
     ...existing, title: values.title.trim(), description: values.description.trim(), priority: values.priority,
-    caseOrigin: values.caseOrigin, caseReason: inferCaseReason(values.description), requiredSkills,
+    caseOrigin: values.caseOrigin, caseReason: inferCaseReason(values.description, next.skills), requiredSkills,
     updatedAt: new Date(now).toISOString(),
   }
   if (values.priority !== existing.priority || values.caseOrigin !== existing.caseOrigin) {
@@ -308,7 +314,7 @@ export function saveSkill(data, skillId, values, now = Date.now()) {
 
 export function saveUser(data, userId, values, now = Date.now()) {
   const next = copy(data)
-  const existing = userId ? next.users.find(user => user.id === userId) : null
+  const existing = userId ? next.users.find(user => user.id === user.id) : null
   if (userId && !existing) throw new Error('User not found')
   const timestamp = new Date(now).toISOString()
   const skills = values.role === 'agent' ? (values.skills || []).map(item => ({ skillId: item.skillId, proficiency: item.proficiency })) : []
@@ -321,8 +327,8 @@ export function saveUser(data, userId, values, now = Date.now()) {
   }
   if (user.maxCapacity < user.currentWorkload) throw new Error('Maximum capacity cannot be lower than current workload')
   if (user.currentWorkload > 0 && existing && user.role !== existing.role) throw new Error('A user with active assignments cannot change roles')
-  if (next.users.some(item => item.email === user.email && item.id !== user.id)) throw new Error('A user with that email already exists')
-  next.users = existing ? next.users.map(item => item.id === user.id ? user : item) : [...next.users, user]
+  if (next.users.some(item => item.email === user.email && user.id !== user.id)) throw new Error('A user with that email already exists')
+  next.users = existing ? next.users.map(item => user.id === user.id ? user : user) : [...next.users, user]
   next.agents = next.users.filter(item => item.role === 'agent')
   updateAgentReferences(next, user)
   return refreshDerivedData(next, now)
