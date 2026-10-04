@@ -353,9 +353,9 @@ function App() {
       };
 
       // Helper function to create assignment (copied from localData.js)
-      const createAssignment = (item, agent, status = 'assigned', now = new Date().toISOString(), score = 0) => {
+      const createAssignment = (item: ServiceCase, agent: Agent, status = 'assigned', now = new Date().toISOString(), score = 0) => {
         // Calculate skill match score (copied from localData.js)
-        const calculateSkillMatch = (item, agent) => {
+        const calculateSkillMatch = (item: ServiceCase, agent: Agent) => {
           const requiredSkills = item.requiredSkills || [];
           if (!requiredSkills.length) return 100;
           return requiredSkills.reduce((sum, skillId) => {
@@ -395,11 +395,11 @@ function App() {
       };
 
       // Helper function to refresh derived data (copied from localData.js)
-      const refreshDerivedData = (data, now = Date.now()) => {
+      const refreshDerivedData = (data: LocalData, now = Date.now()) => {
         const cases = data.cases || [];
         const assignments = data.assignments || [];
         const agents = data.agents || [];
-        const countBy = field => Object.entries(cases.reduce((counts, item) => {
+        const countBy = (field: string) => Object.entries(cases.reduce((counts, item) => {
           const key = item[field] || 'unknown';
           counts[key] = (counts[key] || 0) + 1;
           return counts;
