@@ -651,9 +651,9 @@ function App() {
             <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }, { max: 160 }]}><Input /></Form.Item>
             <Row gutter={12}><Col span={12}><Form.Item label="Role" name="role" rules={[{ required: true }]}><Select options={[{ value: 'agent', label: 'Agent' }, { value: 'supervisor', label: 'Supervisor' }]} /></Form.Item></Col><Col span={12}><Form.Item label="Availability" name="availabilityStatus" rules={[{ required: true }]}><Select options={[{ value: 'available', label: 'Available' }, { value: 'unavailable', label: 'Unavailable' }, { value: 'offline', label: 'Offline' }]} /></Form.Item></Col></Row>
           <Form.Item label="Maximum active cases" name="maxCapacity" rules={[{ required: true }, { type: 'number', min: 1, max: 100 }]}><InputNumber min={Math.max(1, editingUser?.currentWorkload || 0)} max={100} style={{ width: '100%' }} /></Form.Item>
-          <Form.Item noStyle shouldUpdate={(previous, current) => previous.role !== current.role || previous.skillIds !== current.skillIds}>{({ getFieldValue }) => getFieldValue('role') === 'agent' ? <>
+          <Form.Item noStyle shouldUpdate={(previous: any, current: any) => previous.role !== current.role || previous.skillIds !== current.skillIds}>{({ getFieldValue }: { getFieldValue: (name: string) => any }) => getFieldValue('role') === 'agent' ? <>
             <Form.Item label="Assigned skills" name="skillIds" extra="Choose the skills this agent supports, then set proficiency for each one."><Select mode="multiple" allowClear placeholder="Select agent skills" options={skills.map(skill => ({ value: skill.id, label: `${skill.name} · ${skill.category}` }))} /></Form.Item>
-            <Form.Item noStyle shouldUpdate={(previous, current) => previous.skillIds !== current.skillIds}>{({ getFieldValue: getUpdatedValue }) => {
+            <Form.Item noStyle shouldUpdate={(previous: any, current: any) => previous.skillIds !== current.skillIds}>{({ getFieldValue: getUpdatedValue }: { getFieldValue: (name: string) => any }) => {
               const selectedSkillIds = (getUpdatedValue('skillIds') || []) as string[]
               return selectedSkillIds.map(skillId => {
                 const skill = skills.find(item => item.id === skillId)
