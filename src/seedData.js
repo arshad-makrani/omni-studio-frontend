@@ -107,13 +107,65 @@ export function createSeedData(now = Date.now()) {
 
   for (let index = 20; index < cases.length; index += 1) {
     const item = cases[index]
-    const agent = agents[(index - 20) % agents.length]
     const completed = ['resolved', 'closed'].includes(item.status)
     const assignedAt = item.createdAt
     const completedAt = completed
       ? new Date(Date.parse(item.createdAt) + (Date.parse(item.slaExpiration) - Date.parse(item.createdAt)) * 0.7).toISOString()
       : null
     const assignmentStatus = completed ? 'completed' : item.status
+
+    // Find an agent with the required skills for this case
+    let agent = null
+    let skillMatchScore = 0
+
+    if (item.requiredSkills.length > 0) {
+      // Find agents who have all required skills
+      const qualifiedAgents = agents.filter(agent =>
+        item.requiredSkills.every(requiredSkill =>
+          agent.skillIds.includes(requiredSkill)
+        )
+      )
+
+      if (qualifiedAgents.length > 0) {
+        // Assign to the qualified agent with the least current workload
+        agent = qualifiedAgents.reduce((minWorkloadAgent, currentAgent) =>
+          currentAgent.currentWorkload < minWorkloadAgent.currentWorkload ? currentAgent : minWorkloadAgent
+        , qualifiedAgents[0])
+
+        // Calculate skill match score based on proficiency (3-5 range mapped to 60-100)
+        const requiredSkillProficiencies = item.requiredSkills.map(requiredSkill => {
+          const skillObj = agent.skills.find(skill => skill.skillId === requiredSkill)
+          return skillObj ? skillObj.proficiency : 0
+        })
+        const avgProficiency = requiredSkillProficiencies.reduce((sum, prof) => sum + prof, 0) / requiredSkillProficiencies.length
+        skillMatchScore = Math.floor(60 + (avgProficiency - 3) * 20) // Maps 3-5 proficiency to 60-100 score
+      } else {
+        // Fallback: find agent with highest partial skill match
+        const bestMatchAgent = agents.reduce((best, currentAgent) => {
+          const matchedSkills = item.requiredSkills.filter(requiredSkill =>
+            currentAgent.skillIds.includes(requiredSkill)
+          ).length
+          const matchRatio = matchedSkills / item.requiredSkills.length
+
+          if (matchRatio > best.matchRatio ||
+              (matchRatio === best.matchRatio && currentAgent.currentWorkload < best.agent.currentWorkload)) {
+            return { agent: currentAgent, matchRatio }
+          }
+          return best
+        }, { agent: agents[0], matchRatio: 0 })
+
+        agent = bestMatchAgent.agent
+        // Scale matchRatio (0-1) to skill score (60-100)
+        skillMatchScore = Math.floor(60 + bestMatchAgent.matchRatio * 40)
+      }
+    } else {
+      // No required skills, assign to agent with least workload
+      agent = agents.reduce((minWorkloadAgent, currentAgent) =>
+        currentAgent.currentWorkload < minWorkloadAgent.currentWorkload ? currentAgent : minWorkloadAgent
+      , agents[0])
+      skillMatchScore = 80 // Default good score for no skill requirements
+    }
+
     const assignment = {
       id: `assignment-${String(index - 19).padStart(3, '0')}`,
       caseId: item.id,
@@ -123,7 +175,7 @@ export function createSeedData(now = Date.now()) {
       completedAt,
       status: assignmentStatus,
       routingChannel: item.caseOrigin,
-      skillMatchScore: 64 + (index * 11 % 37),
+      skillMatchScore,
       createdAt: assignedAt,
       updatedAt: completedAt || assignedAt,
       case: item,
