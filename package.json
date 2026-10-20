@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:install": "npm install && vite",
     "build": "tsc -b && vite build",
+    "start": "serve -s dist -l $PORT",
     "lint": "oxlint",
     "test": "node --test",
     "preview": "vite preview"
@@ -20,7 +21,8 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
-    "recharts": "^3.10.1"
+    "recharts": "^3.10.1",
+    "serve": "^14.2.6"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
