@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+​import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Alert, Avatar, Badge, Button, Card, Checkbox, Col, Empty, Form, Input, InputNumber, Layout, Menu,
@@ -9,7 +9,7 @@ import type { ColumnsType } from 'antd/es/table'
 import {
   AppstoreOutlined, ArrowUpOutlined, BellOutlined, BookOutlined, CheckCircleOutlined,
   ClockCircleOutlined, DashboardOutlined, EditOutlined, FileAddOutlined, InboxOutlined,
-  MailOutlined, PhoneOutlined, PlusOutlined, ReloadOutlined, SearchOutlined,
+  MailOutlined, MenuFoldOutlined, MenuUnfoldOutlined, PhoneOutlined, PlusOutlined, ReloadOutlined, SearchOutlined,
   TeamOutlined, ThunderboltOutlined, UserOutlined, WechatOutlined,
 } from '@ant-design/icons'
 import {
@@ -39,6 +39,27 @@ const channelNames: Record<string, string> = { web: 'Web', phone: 'Phone', email
 const priorityColors: Record<string, string> = { low: 'default', medium: 'blue', high: 'orange', urgent: 'red' }
 const statusColors: Record<string, string> = { new: 'default', assigned: 'processing', accepted: 'cyan', inProgress: 'blue', resolved: 'success', closed: 'default' }
 const reasonNames: Record<string, string> = { flightChange: 'Flight changes', baggage: 'Baggage', refund: 'Refunds', specialAssistance: 'Special assistance', generalInquiry: 'General inquiry' }
+const C = {
+  elevated: '#1a2740',
+  recessed: '#111827',
+  text: '#f1f5f9',
+  subtle: '#90a1b9',
+  muted: '#62748e',
+  primary: '#d5d76f',
+  highlight: '#fafd86',
+  highlightTint: 'rgba(250,253,134,0.12)',
+  highlightTintHover: 'rgba(250,253,134,0.20)',
+  highlightBorder: 'rgba(250,253,134,0.30)',
+  info: '#22d3ee',
+  infoTint: 'rgba(34,211,238,0.10)',
+  infoBorder: 'rgba(34,211,238,0.30)',
+  success: '#00d492',
+  successTint: 'rgba(0,212,146,0.10)',
+  successBorder: 'rgba(0,212,146,0.30)',
+  warning: '#fbbf24',
+  warningTint: 'rgba(251,191,36,0.10)',
+  warningBorder: 'rgba(251,191,36,0.30)',
+} as const
 
 type Agent = { id: string; name: string; email: string; role?: string; availabilityStatus: string; currentWorkload: number; maxCapacity: number; channelProficiency?: Record<string, number>; skills: { skillId: string; proficiency: number }[]; updatedAt?: string }
 type Skill = { id: string; name: string; description: string; category: string; keywords: string[] }
@@ -97,6 +118,7 @@ function ChannelIcon({ channel }: { channel: string }) {
 
 function App() {
   const [page, setPage] = useState<Page>('overview')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [clock, setClock] = useState(() => Date.now())
   const nowDate = new Date(clock)
   const day = nowDate.toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase()
@@ -492,12 +514,12 @@ function App() {
             setSelectedCaseDetail(item);
             setCaseDetailVisible(true);
           }}>
-            <InboxOutlined style={{ fontSize: 18, color: '#5366bd' }} />
+            <InboxOutlined style={{ fontSize: 18, color: C.highlight }} />
             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
               <div title={title} style={{ fontWeight: 'bold', marginBottom: '4px' }}>
                 {title}
               </div>
-              <div title={description} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.875em', color: '#666' }}>
+              <div title={description} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.875em', color: C.subtle }}>
                 {description}
               </div>
             </div>
@@ -541,7 +563,7 @@ function App() {
             <div title={title} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', fontWeight: 'bold' }}>
               {title}
             </div>
-            <div title={description} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', fontSize: '0.875em', color: '#666' }}>
+            <div title={description} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', fontSize: '0.875em', color: C.subtle }}>
               {description}
             </div>
           </div>
@@ -561,8 +583,8 @@ function App() {
   ]
 
   return (
-    <Layout className="app-shell">
-      <Layout.Sider width={236} className="sidebar" breakpoint="lg" collapsedWidth={72}>
+    <Layout className={`app-shell${sidebarCollapsed ? ' app-shell--collapsed' : ''}`}>
+      <Layout.Sider width={236} className="sidebar" breakpoint="lg" collapsedWidth={72} collapsed={sidebarCollapsed} onCollapse={setSidebarCollapsed} trigger={null}>
         <div className="brand"><span className="brand-mark"><ThunderboltOutlined /></span><span className="brand-copy"><strong>Icelandair</strong><small>SERVICE OPERATIONS</small></span></div>
         <div className="workspace-label">WORKSPACE</div>
         <Menu className="nav-menu" mode="inline" selectedKeys={[page]} onClick={({ key }) => setPage(key as Page)} items={[
@@ -572,12 +594,12 @@ function App() {
           { key: 'skills', icon: <BookOutlined />, label: 'Skills' },
           { key: 'users', icon: <UserOutlined />, label: 'Users' },
         ]} />
-        <div className="sidebar-bottom"><div className="live-indicator"><span /> All systems operational</div><div className="profile"><Avatar size={36} style={{ background: '#dce8ff', color: '#305fd0' }}>NT</Avatar><span><strong>Nilesh Tambe</strong><small>Service supervisor</small></span><Button type="text" icon={<AppstoreOutlined />} aria-label="Profile options" /></div></div>
+        <div className="sidebar-bottom"><div className="live-indicator"><span /> All systems operational</div><div className="profile"><Avatar size={36} style={{ background: C.highlightTint, color: C.highlight }}>NT</Avatar><span><strong>Nilesh Tambe</strong><small>Service supervisor</small></span><Button type="text" icon={<AppstoreOutlined />} aria-label="Profile options" /></div></div>
       </Layout.Sider>
       <Layout className="main-layout">
         <Layout.Header className="topbar">
-          <div className="breadcrumb"><span>Workspace</span><span>/</span><strong>{page === 'overview' ? 'Overview' : page === 'agent' ? 'Agent workspace' : page === 'skills' ? 'Skills' : page === 'users' ? 'Users' : 'Supervisor'}</strong></div>
-          <Space size={12}><Button type="text" icon={<ReloadOutlined />} aria-label="Refresh data" onClick={() => void refresh()} /><Badge dot><Button type="text" icon={<BellOutlined />} aria-label="Notifications" /></Badge><Avatar size={34} style={{ background: '#dce8ff', color: '#305fd0' }}>NT</Avatar></Space>
+          <div className="breadcrumb"><Button type="text" icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} aria-label={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'} onClick={() => setSidebarCollapsed(value => !value)} /><span>Workspace</span><span>/</span><strong>{page === 'overview' ? 'Overview' : page === 'agent' ? 'Agent workspace' : page === 'skills' ? 'Skills' : page === 'users' ? 'Users' : 'Supervisor'}</strong></div>
+          <Space size={12}><Button type="text" icon={<ReloadOutlined />} aria-label="Refresh data" onClick={() => void refresh()} /><Badge dot><Button type="text" icon={<BellOutlined />} aria-label="Notifications" /></Badge><Avatar size={34} style={{ background: C.highlightTint, color: C.highlight }}>NT</Avatar></Space>
         </Layout.Header>
         <Layout.Content className="page-content">
           {loading && !stats ? <Card className="loading-card"><Skeleton active paragraph={{ rows: 6 }} /></Card> : !stats ? <Empty description={storageError || 'Browser storage could not be reached'}><Button type="primary" onClick={() => void refresh()}>Try again</Button></Empty> : <>
@@ -586,7 +608,7 @@ function App() {
             {stats.atRisk > 0 && <Alert className="risk-alert" type="warning" showIcon message={`${stats.atRisk} ${stats.atRisk === 1 ? 'case is' : 'cases are'} approaching their SLA deadline`} description="Review the at-risk queue and reassign work if needed." action={<Button size="small" onClick={() => setPage('supervisor')}>Review queue</Button>} />}
 
             {page === 'agent' ? <>
-              <Card className="agent-select-card" bordered={false}><Space><Avatar icon={<UserOutlined />} style={{ background: '#eef2ff', color: '#5366bd' }} /><div><Typography.Text type="secondary">Viewing workspace for</Typography.Text><br /><Select aria-label="Choose agent" value={selectedAgent} onChange={setSelectedAgent} options={agents.map(agent => ({ value: agent.id, label: agent.name }))} style={{ minWidth: 220 }} /></div></Space><span className="capacity-chip">{currentAgent ? `${currentAgent.currentWorkload} / ${currentAgent.maxCapacity} active items` : 'No agents available'}</span></Card>
+              <Card className="agent-select-card" bordered={false}><Space><Avatar icon={<UserOutlined />} style={{ background: C.highlightTint, color: C.highlight }} /><div><Typography.Text type="secondary">Viewing workspace for</Typography.Text><br /><Select aria-label="Choose agent" value={selectedAgent} onChange={setSelectedAgent} options={agents.map(agent => ({ value: agent.id, label: agent.name }))} style={{ minWidth: 220 }} /></div></Space><span className="capacity-chip">{currentAgent ? `${currentAgent.currentWorkload} / ${currentAgent.maxCapacity} active items` : 'No agents available'}</span></Card>
               <Row gutter={[16, 16]} className="stat-row"><Col xs={12} xl={6}><Metric title="Assigned to me" value={agentAssignments.length} suffix="items" icon={<InboxOutlined />} tone="blue" /></Col><Col xs={12} xl={6}><Metric title="Waiting acceptance" value={agentAssignments.filter(item => item.status === 'assigned').length} suffix="items" icon={<ClockCircleOutlined />} tone="amber" /></Col><Col xs={12} xl={6}><Metric title="In progress" value={agentAssignments.filter(item => item.status === 'inProgress').length} suffix="items" icon={<ThunderboltOutlined />} tone="violet" /></Col><Col xs={12} xl={6}><Metric title="My capacity" value={currentAgent?.maxCapacity ? Math.round((currentAgent.currentWorkload / currentAgent.maxCapacity) * 100) : 0} suffix="%" icon={<TeamOutlined />} tone="green" /></Col></Row>
               <Card className="table-card" bordered={false} title={<div className="card-title"><span>My work queue</span><Tag>{agentAssignments.length} ACTIVE</Tag></div>} extra={<Button type="text" icon={<ReloadOutlined />} onClick={() => void refresh(false)}>Refresh</Button>}><Table rowKey="id" columns={assignmentColumns} dataSource={agentAssignments} pagination={agentAssignments.length > 20 ? { ...tablePagination, current: tablePaginationState.current, pageSize: tablePaginationState.pageSize, onShowSizeChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, onChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, style: { marginTop: 16 } } : false} locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nothing in your queue right now" /> }} scroll={{ x: 760 }} className="paginated-table" /></Card>
             </> : page === 'supervisor' ? <>
@@ -605,15 +627,15 @@ function App() {
                     Re-trigger Assignment Rules
                   </Button>
                 </div>}><Table rowKey="id" columns={caseColumns} dataSource={filteredCases} pagination={filteredCases.length > 20 ? { ...tablePagination, current: tablePaginationState.current, pageSize: tablePaginationState.pageSize, onShowSizeChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, onChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, style: { marginTop: 16 } } : false} locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No cases match this search" /> }} scroll={{ x: 900 }} className="paginated-table" /></Card>
-              <Card className="table-card utilization-card" bordered={false} title={<div className="card-title"><span>Team capacity</span><span className="muted">Active work / maximum capacity</span></div>}><div className="utilization-list">{stats.agentUtilization.map(agent => <div className="utilization-row" key={agent.id}><Avatar size={34} style={{ background: '#edf1ff', color: '#5265ba' }}>{agent.name.split(' ').map(part => part[0]).join('').slice(0, 2)}</Avatar><span className="utilization-name"><strong>{agent.name}</strong><small>{agent.currentWorkload} of {agent.maxCapacity} cases</small></span><Progress percent={Math.round(agent.utilization)} showInfo={false} strokeColor={agent.utilization >= 85 ? '#f0a347' : '#6682ee'} /><span className="utilization-percent">{Math.round(agent.utilization)}%</span></div>)}</div></Card>
+              <Card className="table-card utilization-card" bordered={false} title={<div className="card-title"><span>Team capacity</span><span className="muted">Active work / maximum capacity</span></div>}><div className="utilization-list">{stats.agentUtilization.map(agent => <div className="utilization-row" key={agent.id}><Avatar size={34} style={{ background: C.highlightTint, color: C.highlight }}>{agent.name.split(' ').map(part => part[0]).join('').slice(0, 2)}</Avatar><span className="utilization-name"><strong>{agent.name}</strong><small>{agent.currentWorkload} of {agent.maxCapacity} cases</small></span><Progress percent={Math.round(agent.utilization)} showInfo={false} strokeColor={agent.utilization >= 85 ? C.warning : C.primary} /><span className="utilization-percent">{Math.round(agent.utilization)}%</span></div>)}</div></Card>
             </> : page === 'skills' ? <>
               <Card className="table-card" bordered={false} title={<div className="card-title"><span>Routing skills</span><Tag>{skills.length} TOTAL</Tag></div>}><Table rowKey="id" columns={skillColumns} dataSource={skills} pagination={skills.length > 20 ? { ...tablePagination, current: tablePaginationState.current, pageSize: tablePaginationState.pageSize, onShowSizeChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, onChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, style: { marginTop: 16 } } : false} locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No skills configured yet" /> }} scroll={{ x: 720 }} className="paginated-table" /></Card>
             </> : page === 'users' ? <>
               <Card className="table-card" bordered={false} title={<div className="card-title"><span>Users and agents</span><Tag>{users.length} TOTAL</Tag></div>}><Table rowKey="id" columns={userColumns} dataSource={users} pagination={users.length > 20 ? { ...tablePagination, current: tablePaginationState.current, pageSize: tablePaginationState.pageSize, onShowSizeChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, onChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, style: { marginTop: 16 } } : false} locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No users configured yet" /> }} scroll={{ x: 920 }} className="paginated-table" /></Card>
             </> : <>
               <Row gutter={[16, 16]} className="stat-row"><Col xs={12} xl={6}><Metric title="Total cases" value={stats.totalCases} trend="All time" icon={<InboxOutlined />} tone="blue" /></Col><Col xs={12} xl={6}><Metric title="Open cases" value={stats.openCases} trend="Needs attention" icon={<ClockCircleOutlined />} tone="amber" /></Col><Col xs={12} xl={6}><Metric title="SLA compliance" value={stats.slaCompliance === null ? 'N/A' : Math.round(stats.slaCompliance)} suffix={stats.slaCompliance === null ? undefined : '%'} trend="Within SLA or resolved on time" icon={<CheckCircleOutlined />} tone="green" /></Col><Col xs={12} xl={6}><Metric title="Skill match" value={Math.round(stats.avgSkillMatch)} suffix="%" trend="Average routing score" icon={<ThunderboltOutlined />} tone="violet" /></Col></Row>
-              <Row gutter={[16, 16]} className="overview-grid"><Col xs={24} xl={16}><Card className="chart-card" bordered={false} title={<div className="card-title"><span>Case volume</span><Tag color="green">LIVE</Tag></div>} extra={<span className="muted">Last 7 days</span>}><div className="chart-summary"><strong>{stats.totalCases}</strong><span>cases in the queue</span><span className="trend-positive">{stats.openCases} currently open</span></div><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={weeklyVolume(cases)} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}><defs><linearGradient id="casesFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#6482ef" stopOpacity={0.22} /><stop offset="100%" stopColor="#6482ef" stopOpacity={0.015} /></linearGradient></defs><CartesianGrid stroke="#edf0f5" vertical={false} /><XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#9299a8', fontSize: 12 }} dy={10} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: '#9299a8', fontSize: 12 }} /><ChartTooltip contentStyle={{ border: '1px solid #e9edf3', borderRadius: 10, boxShadow: '0 8px 24px rgba(32,44,78,.09)' }} /><Area type="monotone" dataKey="cases" stroke="#6884ef" strokeWidth={2.5} fill="url(#casesFill)" activeDot={{ r: 5, fill: '#fff', stroke: '#6884ef', strokeWidth: 2 }} /></AreaChart></ResponsiveContainer></div></Card></Col>
-                <Col xs={24} xl={8}><Card className="channel-card" bordered={false} title={<div className="card-title"><span>Channel mix</span><span className="muted">By case origin</span></div>}><div className="channel-list">{['web', 'phone', 'email', 'social'].map((channel, index) => { const count = stats.casesByChannel.find(item => item.label === channel)?.count || 0; const percent = stats.totalCases ? Math.round(count / stats.totalCases * 100) : 0; return <div className="channel-row" key={channel}><span className={`channel-icon channel-${channel}`}><ChannelIcon channel={channel} /></span><span className="channel-info"><strong>{channelNames[channel]}</strong><small>{count} {count === 1 ? 'case' : 'cases'}</small></span><span className="channel-share">{percent}%</span><Progress percent={percent} showInfo={false} strokeColor={['#6584ee', '#31a98f', '#e4a347', '#9674df'][index]} trailColor="#f0f2f6" /></div> })}</div><div className="channel-footer"><span><span className="legend-dot" /> Total cases</span><strong>{stats.totalCases}</strong></div></Card></Col></Row>
+              <Row gutter={[16, 16]} className="overview-grid"><Col xs={24} xl={16}><Card className="chart-card" bordered={false} title={<div className="card-title"><span>Case volume</span><Tag color="green">LIVE</Tag></div>} extra={<span className="muted">Last 7 days</span>}><div className="chart-summary"><strong>{stats.totalCases}</strong><span>cases in the queue</span><span className="trend-positive">{stats.openCases} currently open</span></div><div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={weeklyVolume(cases)} margin={{ top: 12, right: 8, left: -20, bottom: 0 }}><defs><linearGradient id="casesFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.primary} stopOpacity={0.22} /><stop offset="100%" stopColor={C.primary} stopOpacity={0.015} /></linearGradient></defs><CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} /><XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: C.muted, fontSize: 12 }} dy={10} /><YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: C.muted, fontSize: 12 }} /><ChartTooltip contentStyle={{ background: C.elevated, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.45)', color: C.text }} /><Area type="monotone" dataKey="cases" stroke={C.primary} strokeWidth={2.5} fill="url(#casesFill)" activeDot={{ r: 5, fill: '#0b1120', stroke: C.primary, strokeWidth: 2 }} /></AreaChart></ResponsiveContainer></div></Card></Col>
+                <Col xs={24} xl={8}><Card className="channel-card" bordered={false} title={<div className="card-title"><span>Channel mix</span><span className="muted">By case origin</span></div>}><div className="channel-list">{['web', 'phone', 'email', 'social'].map((channel, index) => { const count = stats.casesByChannel.find(item => item.label === channel)?.count || 0; const percent = stats.totalCases ? Math.round(count / stats.totalCases * 100) : 0; return <div className="channel-row" key={channel}><span className={`channel-icon channel-${channel}`}><ChannelIcon channel={channel} /></span><span className="channel-info"><strong>{channelNames[channel]}</strong><small>{count} {count === 1 ? 'case' : 'cases'}</small></span><span className="channel-share">{percent}%</span><Progress percent={percent} showInfo={false} strokeColor={[C.info, C.success, C.warning, '#d9db76'][index]} trailColor="rgba(255,255,255,0.06)" /></div> })}</div><div className="channel-footer"><span><span className="legend-dot" /> Total cases</span><strong>{stats.totalCases}</strong></div></Card></Col></Row>
               <Row gutter={[16, 16]} className="bottom-grid" align="top"><Col xs={24} xl={16}><Card className="table-card" bordered={false} title={<div className="card-title"><span>Recent cases</span><Tag>{cases.length} CASES</Tag></div>} extra={<Button type="link" onClick={() => setPage('supervisor')}>View all <ArrowUpOutlined rotate={45} /></Button>}><Table rowKey="id" columns={caseColumns.slice(0, 6)} dataSource={filteredCases} pagination={filteredCases.length > 20 ? { ...tablePagination, current: tablePaginationState.current, pageSize: tablePaginationState.pageSize, onShowSizeChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, onChange: (current, pageSize) => { setTablePaginationState({ current, pageSize }); }, style: { marginTop: 16 } } : false} size="small" locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Your queue is clear. Submit a new case to get started." /> }} scroll={{ x: 720, y: 240 }} className="paginated-table" /></Card></Col><Col xs={24} xl={8}><Card className="reason-card" bordered={false} title={<div className="card-title"><span>Top contact reasons</span><span className="muted">All cases</span></div>}><div className="reason-list">{[...stats.casesByReason].sort((a, b) => b.count - a.count).slice(0, 4).map((item, index) => <div className="reason-row" key={item.label}><span className={`reason-rank rank-${index + 1}`}>0{index + 1}</span><span className="reason-name">{reasonNames[item.label] || item.label}</span><strong>{item.count}</strong></div>)}</div></Card></Col></Row>
             </>}
           </>}
@@ -720,14 +742,14 @@ function App() {
                 <div style={{
                   width: '48px',
                   height: '48px',
-                  background: '#f0f2f6',
+                  background: C.highlightTint,
                   borderRadius: '8px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0
                 }}>
-                  <InboxOutlined style={{ fontSize: '24px', color: '#5366bd' }} />
+                  <InboxOutlined style={{ fontSize: '24px', color: C.highlight }} />
                 </div>
                 <div>
                   <Typography.Title level={4} style={{
@@ -766,10 +788,11 @@ function App() {
                       alignItems: 'center',
                       gap: '8px',
                       padding: '4px 8px',
-                      background: '#e6f7ff',
-                      border: '1px solid #91d5ff',
+                      background: C.infoTint,
+                      border: '1px solid rgba(34,211,238,0.30)',
                       borderRadius: '4px',
-                      fontSize: '13px'
+                      fontSize: '13px',
+                      color: C.info
                     }}>
                       <ChannelIcon channel={selectedCaseDetail.caseOrigin} />
                       <span>{channelNames[selectedCaseDetail.caseOrigin] || selectedCaseDetail.caseOrigin}</span>
@@ -781,11 +804,11 @@ function App() {
                         alignItems: 'center',
                         gap: '8px',
                         padding: '4px 8px',
-                        background: '#fff7e6',
-                        border: '1px solid #ffd591',
+                        background: C.warningTint,
+                        border: '1px solid rgba(251,191,36,0.30)',
                         borderRadius: '4px',
                         fontSize: '13px',
-                        color: '#d48806'
+                        color: C.warning
                       }}>
                         <ClockCircleOutlined style={{ fontSize: '14px' }} />
                         <span>
@@ -800,11 +823,11 @@ function App() {
                         alignItems: 'center',
                         gap: '8px',
                         padding: '4px 8px',
-                        background: '#f6ffed',
-                        border: '1px solid #b7eb8f',
+                        background: C.successTint,
+                        border: '1px solid rgba(0,212,146,0.30)',
                         borderRadius: '4px',
                         fontSize: '13px',
-                        color: '#52c41a',
+                        color: C.success,
                         marginLeft: '12px'
                       }}>
                         <ClockCircleOutlined style={{ fontSize: '14px' }} />
@@ -822,16 +845,16 @@ function App() {
                 fontSize: '15px',
                 fontWeight: 600,
                 marginBottom: '12px',
-                color: 'rgba(0, 0, 0, 0.85)'
+                color: C.text
               }}>
                 Case Description
               </Typography.Text>
               <div style={{
                 minHeight: '80px',
                 padding: '20px',
-                border: '1px solid #f0f2f6',
+                border: '1px solid rgba(255,255,255,0.07)',
                 borderRadius: '8px',
-                background: '#fff',
+                background: C.recessed,
                 lineHeight: '1.6',
                 whiteSpace: 'pre-wrap',
                 wordWrap: 'break-word'
@@ -847,7 +870,7 @@ function App() {
                   fontSize: '15px',
                   fontWeight: 600,
                   marginBottom: '12px',
-                  color: 'rgba(0, 0, 0, 0.85)'
+                  color: C.text
                 }}>
                   Required Skills
                 </Typography.Text>
@@ -865,22 +888,23 @@ function App() {
                         alignItems: 'center',
                         gap: '4px',
                         padding: '6px 12px',
-                        background: '#e6f7ff',
-                        border: '1px solid #91d5ff',
+                        background: C.highlightTint,
+                        border: '1px solid rgba(250,253,134,0.30)',
                         borderRadius: '5px',
                         fontSize: '13px',
                         fontWeight: 500,
+                        color: C.highlight,
                         transition: 'all 0.2s ease',
                         whiteSpace: 'nowrap'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#d4e9ff';
-                        e.currentTarget.style.borderColor = '#91d5ff';
+                        e.currentTarget.style.background = C.highlightTintHover;
+                        e.currentTarget.style.borderColor = 'rgba(250,253,134,0.30)';
                         e.currentTarget.style.transform = 'translateY(-1px)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#e6f7ff';
-                        e.currentTarget.style.borderColor = '#91d5ff';
+                        e.currentTarget.style.background = C.highlightTint;
+                        e.currentTarget.style.borderColor = 'rgba(250,253,134,0.30)';
                         e.currentTarget.style.transform = 'translateY(0px)';
                       }}
                     >
@@ -898,7 +922,7 @@ function App() {
                   fontSize: '15px',
                   fontWeight: 600,
                   marginBottom: '12px',
-                  color: 'rgba(0, 0, 0, 0.85)'
+                  color: C.text
                 }}>
                   Assigned Agent
                 </Typography.Text>
@@ -907,17 +931,17 @@ function App() {
                   alignItems: 'center',
                   gap: '16px',
                   padding: '20px',
-                  border: '1px solid #f0f2f6',
+                  border: '1px solid rgba(255,255,255,0.07)',
                   borderRadius: '8px',
-                  background: '#fff'
+                  background: C.recessed
                 }}>
                   <Avatar
                     icon={<UserOutlined />}
                     style={{
                       width: '48px',
                       height: '48px',
-                      background: '#e6f7ff',
-                      color: '#5366bd',
+                      background: C.highlightTint,
+                      color: C.highlight,
                       fontSize: '20px',
                       fontWeight: 600
                     }}
@@ -939,7 +963,7 @@ function App() {
           <div style={{
             textAlign: 'center',
             padding: '56px 36px',
-            color: 'rgba(0, 0, 0, 0.45)',
+            color: C.muted,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',

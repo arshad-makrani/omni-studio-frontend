@@ -1,22 +1,61 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  font-family: 'DM Sans', Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #334056;
-  background: #f5f7fb;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #f1f5f9;
+  background: #0b1120;
+  color-scheme: dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-optical-sizing: auto;
   font-weight: 400;
-  --app-text: #334056;
-  --app-heading: 'Manrope', 'DM Sans', sans-serif;
+  --app-text: #f1f5f9;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; font-family: 'Inter', sans-serif; }
 html, body, #root { min-width: 320px; min-height: 100%; margin: 0; }
-body { min-height: 100vh; }
+body { min-height: 100vh; background: #0b1120; }
 button, input, textarea, select { font: inherit; }
-::selection { color: #263c80; background: #dce5ff; }
-*:focus-visible { outline: 2px solid #5778e7; outline-offset: 2px; }
+::selection { color: #0b1120; background: #fafd86; }
+*:focus-visible { outline: 2px solid #d5d76f; outline-offset: 2px; }
+
+/* ── Scrollbar (matches eag-dev) ─────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(250, 253, 134, 0.25);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+ 
