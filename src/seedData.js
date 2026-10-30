@@ -18,7 +18,7 @@ const skills = [
 ]
 
 const seedUsers = [
-  { id: 'agent-jordan', name: 'Jordan Kim', email: 'jordan.kim@example.test', role: 'agent', maxCapacity: 15, skillIds: ['skill-flight-booking', 'skill-baggage', 'skill-spanish'] },
+  { id: 'agent-arshad', name: 'Arshad Makrani', email: 'arshad.m@example.test', role: 'agent', maxCapacity: 15, skillIds: ['skill-flight-booking', 'skill-baggage', 'skill-spanish'] },
   { id: 'agent-riley', name: 'Riley Morgan', email: 'riley.morgan@example.test', role: 'agent', maxCapacity: 15, skillIds: ['skill-refund', 'skill-assistance', 'skill-flight-booking'] },
   { id: 'agent-casey', name: 'Casey Patel', email: 'casey.patel@example.test', role: 'agent', maxCapacity: 15, skillIds: ['skill-technical', 'skill-spanish', 'skill-baggage'] },
   { id: 'agent-avery', name: 'Avery Chen', email: 'avery.chen@example.test', role: 'agent', maxCapacity: 15, skillIds: ['skill-flight-booking', 'skill-refund', 'skill-technical', 'skill-assistance'] },
